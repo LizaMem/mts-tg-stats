@@ -363,6 +363,8 @@ const COLS = [
   { key: "comments", label: "Комменты", get: p => p.comments },
   { key: "er", label: "Вовлечённость", get: engagement },
   { key: "utm_content", label: "utm_content", cls: "l", get: p => p.utm_content || "" },
+  { key: "utm_source", label: "utm_source", cls: "l", get: p => utmParam(p, "utm_source") },
+  { key: "utm_medium", label: "utm_medium", cls: "l", get: p => utmParam(p, "utm_medium") },
   { key: "utm_campaign", label: "utm_campaign", cls: "l", get: p => utmParam(p, "utm_campaign") },
   { key: "utm_links", label: "UTM-ссылки", cls: "l", get: p => utmLinks(p).join(" ") },
 ];
@@ -461,7 +463,8 @@ function render() {
     el("td", {}, fmt.format(p.comments)),
     el("td", {}, fmtPct.format(engagement(p))),
     el("td", { class: "l" }, el("span", { class: "utm" }, p.utm_content || "—")),
-    el("td", { class: "l" }, el("span", { class: "utm" }, utmParam(p, "utm_campaign") || "—")),
+    ...["utm_source", "utm_medium", "utm_campaign"].map(k =>
+      el("td", { class: "l" }, el("span", { class: "utm" }, utmParam(p, k) || "—"))),
     el("td", { class: "l links" }, utmLinks(p).length
       ? utmLinks(p).map(u => el("a", { href: /^https?:/.test(u) ? u : "https://" + u, target: "_blank", rel: "noopener", title: u }, u.replace(/^https?:\/\//, "")))
       : el("span", { class: "utm" }, "—")),
