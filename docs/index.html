@@ -128,6 +128,9 @@ td.post a { color: var(--ink); text-decoration: none; }
 td.post a:hover { text-decoration: underline; }
 td.post .rx { color: var(--muted); font-size: 12px; margin-top: 2px; }
 td .utm { color: var(--ink-2); font-size: 12px; }
+td.links { max-width: 320px; }
+td.links a { display: block; max-width: 320px; overflow: hidden; text-overflow: ellipsis; color: var(--accent); font-size: 12px; text-decoration: none; }
+td.links a:hover { text-decoration: underline; }
 tbody tr { cursor: pointer; }
 tbody tr:hover { background: var(--hover); }
 tbody tr.sel { background: var(--accent-wash); }
@@ -360,7 +363,9 @@ const COLS = [
   { key: "comments", label: "Комменты", get: p => p.comments },
   { key: "er", label: "Вовлечённость", get: engagement },
   { key: "utm_content", label: "utm_content", cls: "l", get: p => p.utm_content || "" },
+  { key: "utm_links", label: "UTM-ссылки", cls: "l", get: p => utmLinks(p).join(" ") },
 ];
+const utmLinks = p => (p.links || []).filter(u => u.includes("utm_"));
 
 function tile(label, value, delta, hero) {
   return el("div", { class: "card tile" + (hero ? " hero" : "") },
@@ -445,6 +450,9 @@ function render() {
     el("td", {}, fmt.format(p.comments)),
     el("td", {}, fmtPct.format(engagement(p))),
     el("td", { class: "l" }, el("span", { class: "utm" }, p.utm_content || "—")),
+    el("td", { class: "l links" }, utmLinks(p).length
+      ? utmLinks(p).map(u => el("a", { href: /^https?:/.test(u) ? u : "https://" + u, target: "_blank", rel: "noopener", title: u }, u.replace(/^https?:\/\//, "")))
+      : el("span", { class: "utm" }, "—")),
   )));
   const table = el("div", { class: "card" },
     el("h2", {}, "Все посты"),

@@ -201,6 +201,10 @@ def save(path, title, fresh, subscribers):
           f"подписчиков: {subscribers}")
 
 
+def utm_links(post):
+    return [u for u in post.get("links", []) if "utm_" in u]
+
+
 MINSK = timezone(timedelta(hours=3))
 
 
@@ -217,12 +221,13 @@ def write_csv(folder, data):
 
     dump("posts.csv",
          ["post_id", "date", "text", "views", "reactions", "forwards", "comments",
-          "engagement", "reactions_detail", "utm_content", "link"],
+          "engagement", "reactions_detail", "utm_content", "link", "utm_links"],
          [[p["post_id"], local(p["date"]), p["text"], p["views"], p["reactions_total"],
            p["forwards"], p["comments"],
            round((p["reactions_total"] + p["forwards"] + p["comments"]) / p["views"], 4)
            if p["views"] else 0,
-           p["reactions"], p["utm_content"], p["link"]] for p in data["posts"]])
+           p["reactions"], p["utm_content"], p["link"], " ".join(utm_links(p))]
+          for p in data["posts"]])
     dump("subscribers.csv", ["date", "subscribers"], sorted(data["subscribers"].items()))
     dump("history.csv", ["date", "post_id", "views", "forwards", "comments", "reactions"],
          [[day, pid, *vals] for day, posts in sorted(data["history"].items())
