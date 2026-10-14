@@ -224,14 +224,14 @@ def write_csv(folder, data):
 
     dump("posts.csv",
          ["post_id", "date", "text", "views", "reactions", "forwards", "comments",
-          "engagement", "reactions_detail", "utm_content", "link", "utm_links", "utm_campaign", "utm_source", "utm_medium"],
+          "engagement", "reactions_detail", "utm_content", "link", "utm_links", "utm_source", "utm_medium", "utm_campaign"],
          [[p["post_id"], local(p["date"]), p["text"], p["views"], p["reactions_total"],
            p["forwards"], p["comments"],
            round((p["reactions_total"] + p["forwards"] + p["comments"]) / p["views"], 4)
            if p["views"] else 0,
            p["reactions"], p["utm_content"], p["link"], " ".join(utm_links(p)),
            *(utm_values(p.get("links", []), k)
-             for k in ("utm_campaign", "utm_source", "utm_medium"))]
+             for k in ("utm_source", "utm_medium", "utm_campaign"))]
           for p in data["posts"]])
     dump("subscribers.csv", ["date", "subscribers"], sorted(data["subscribers"].items()))
     dump("history.csv", ["date", "post_id", "views", "forwards", "comments", "reactions"],
