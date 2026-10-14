@@ -81,12 +81,12 @@ def links_of(msg):
     return urls
 
 
-def utm_contents(urls):
+def utm_values(urls, param="utm_content"):
     values = []
     for url in urls:
         if not url.startswith(("http://", "https://")):
             url = "https://" + url
-        for value in parse_qs(urlparse(url).query).get("utm_content", []):
+        for value in parse_qs(urlparse(url).query).get(param, []):
             if value not in values:
                 values.append(value)
     return ", ".join(values)
@@ -158,7 +158,8 @@ async def fetch(days):
         rows.append({
             **post,
             "link": link,
-            "utm_content": utm_contents(urls),
+            "utm_content": utm_values(urls),
+            "utm_campaign": utm_values(urls, "utm_campaign"),
             "links": list(dict.fromkeys(urls)),
         })
     return channel.title, rows, subscribers
@@ -221,12 +222,13 @@ def write_csv(folder, data):
 
     dump("posts.csv",
          ["post_id", "date", "text", "views", "reactions", "forwards", "comments",
-          "engagement", "reactions_detail", "utm_content", "link", "utm_links"],
+          "engagement", "reactions_detail", "utm_content", "link", "utm_links", "utm_campaign"],
          [[p["post_id"], local(p["date"]), p["text"], p["views"], p["reactions_total"],
            p["forwards"], p["comments"],
            round((p["reactions_total"] + p["forwards"] + p["comments"]) / p["views"], 4)
            if p["views"] else 0,
-           p["reactions"], p["utm_content"], p["link"], " ".join(utm_links(p))]
+           p["reactions"], p["utm_content"], p["link"], " ".join(utm_links(p)),
+           utm_values(p.get("links", []), "utm_campaign")]
           for p in data["posts"]])
     dump("subscribers.csv", ["date", "subscribers"], sorted(data["subscribers"].items()))
     dump("history.csv", ["date", "post_id", "views", "forwards", "comments", "reactions"],

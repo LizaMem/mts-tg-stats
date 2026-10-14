@@ -363,9 +363,20 @@ const COLS = [
   { key: "comments", label: "Комменты", get: p => p.comments },
   { key: "er", label: "Вовлечённость", get: engagement },
   { key: "utm_content", label: "utm_content", cls: "l", get: p => p.utm_content || "" },
+  { key: "utm_campaign", label: "utm_campaign", cls: "l", get: p => utmParam(p, "utm_campaign") },
   { key: "utm_links", label: "UTM-ссылки", cls: "l", get: p => utmLinks(p).join(" ") },
 ];
 const utmLinks = p => (p.links || []).filter(u => u.includes("utm_"));
+function utmParam(p, name) {
+  const out = [];
+  for (const u of utmLinks(p)) {
+    try {
+      const v = new URL(/^https?:/.test(u) ? u : "https://" + u).searchParams.get(name);
+      if (v && !out.includes(v)) out.push(v);
+    } catch (e) {}
+  }
+  return out.join(", ");
+}
 
 function tile(label, value, delta, hero) {
   return el("div", { class: "card tile" + (hero ? " hero" : "") },
@@ -450,6 +461,7 @@ function render() {
     el("td", {}, fmt.format(p.comments)),
     el("td", {}, fmtPct.format(engagement(p))),
     el("td", { class: "l" }, el("span", { class: "utm" }, p.utm_content || "—")),
+    el("td", { class: "l" }, el("span", { class: "utm" }, utmParam(p, "utm_campaign") || "—")),
     el("td", { class: "l links" }, utmLinks(p).length
       ? utmLinks(p).map(u => el("a", { href: /^https?:/.test(u) ? u : "https://" + u, target: "_blank", rel: "noopener", title: u }, u.replace(/^https?:\/\//, "")))
       : el("span", { class: "utm" }, "—")),
